@@ -6,7 +6,7 @@ import java.util.List;
 import static java.lang.Character.isDigit;
 
 public class JsonTokenizer {
-    public static List<Token> tokenize(String rawJson) {
+    static List<Token> tokenize(String rawJson) {
         List<Token> tokens = new ArrayList<>();
         int len = rawJson.length();
         int i = 0;
