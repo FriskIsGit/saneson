@@ -1,4 +1,4 @@
-package saneson.core;
+package saneson.impl;
 
 import java.util.ArrayList;
 import java.util.List;

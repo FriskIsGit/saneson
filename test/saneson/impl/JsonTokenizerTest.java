@@ -1,7 +1,8 @@
-package saneson.core;
+package saneson.impl;
 
 import static org.junit.Assert.*;
 import org.junit.Test;
+
 import java.util.List;
 
 public class JsonTokenizerTest {
