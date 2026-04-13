@@ -3,13 +3,13 @@ package saneson.core;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JsonObject implements JsonElement {
+public class JsonObject implements JsonNode {
     List<JsonPair> level;
     public JsonObject(List<JsonPair> level) {
         this.level = level;
     }
 
-    private JsonElement find(String key) {
+    JsonNode find(String key) {
         for (JsonPair pair : level) {
             if (pair.key.equals(key)) {
                 return pair.element;
@@ -34,12 +34,12 @@ public class JsonObject implements JsonElement {
     }
 
     public JsonObject getObject(String key) {
-        JsonElement element = find(key);
+        JsonNode element = find(key);
         if (element == null) {
             return null;
         }
-        if (element.isObject()) {
-            return element.asObject();
+        if (element instanceof JsonObject obj) {
+            return obj;
         }
         throw new JsonException("Field '" + key + "' is not an object");
     }
@@ -77,7 +77,7 @@ public class JsonObject implements JsonElement {
         throw new JsonException("Field '" + key + "' is not a boolean");
     }
 
-    public List<JsonElement> getArray(String key) {
+    public List<JsonNode> getArray(String key) {
         JsonValue value = getValue(key);
         if (value == null) {
             return null;
@@ -89,12 +89,12 @@ public class JsonObject implements JsonElement {
     }
 
     public List<Integer> getIntArray(String key) {
-        List<JsonElement> array = getArray(key);
+        List<JsonNode> array = getArray(key);
         if (array == null) {
             return null;
         }
         List<Integer> intList = new ArrayList<>(array.size());
-        for (JsonElement element : array) {
+        for (JsonNode element : array) {
             JsonValue v = element.asValue();
             if (v == null || !v.isNumber()) {
                 throw new JsonException("Field '" + key + "' contains a non-number element");
@@ -105,15 +105,16 @@ public class JsonObject implements JsonElement {
     }
 
     private JsonValue getValue(String key) {
-        JsonElement element = find(key);
+        JsonNode element = find(key);
         if (element == null) {
             return null;
         }
-        if (element.isObject()) {
-            throw new JsonException("Field '" + key + "' is an object, not a value");
+        if (element instanceof JsonValue val) {
+            return val;
         }
-        return element.asValue();
+        throw new JsonException("Field '" + key + "' is an object, not a value");
     }
+
 
     @Override
     public boolean isObject() {
@@ -128,5 +129,10 @@ public class JsonObject implements JsonElement {
     @Override
     public JsonObject asObject() {
         return this;
+    }
+
+    @Override
+    public String toString() {
+        return "JsonObject (pairs=" + level.size() + ")";
     }
 }

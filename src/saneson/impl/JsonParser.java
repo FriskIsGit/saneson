@@ -12,14 +12,14 @@ public final class JsonParser {
         this.tokens = tokens;
     }
 
-    public static JsonElement parse(String json) {
+    public static JsonNode parse(String json) {
         List<Token> tokens = JsonTokenizer.tokenize(json);
         return parse(tokens);
     }
 
-    static JsonElement parse(List<Token> tokens) {
+    static JsonNode parse(List<Token> tokens) {
         JsonParser parser = new JsonParser(tokens);
-        JsonElement value = parser.parseValue(0);
+        JsonNode value = parser.parseValue(0);
         if (parser.hasToken()) {
             throw new JsonException("Extra token after JSON value: " + parser.token());
         }
@@ -44,7 +44,7 @@ public final class JsonParser {
         }
     }
 
-    private JsonElement parseValue(int depth) {
+    private JsonNode parseValue(int depth) {
         if (!hasToken()) {
             throw new JsonException("Unexpected EOF");
         }
@@ -88,7 +88,7 @@ public final class JsonParser {
             next();
             expect(Token.Type.COLON);
             next();
-            JsonElement value = parseValue(depth + 1);
+            JsonNode value = parseValue(depth + 1);
             var jsonPair = new JsonPair(keyToken.value, value);
             level.add(jsonPair);
             if (!hasToken()) {
@@ -107,14 +107,14 @@ public final class JsonParser {
 
     private JsonValue parseArray(int depth) {
         next();
-        List<JsonElement> arr = new ArrayList<>();
+        List<JsonNode> arr = new ArrayList<>();
         // Check empty array before parsing value
         if (hasToken() && token().type == Token.Type.RIGHT_BRACKET) {
             next();
             return new JsonValue(arr);
         }
         while (true) {
-            JsonElement value = parseValue(depth);
+            JsonNode value = parseValue(depth);
             arr.add(value);
             if (!hasToken()) {
                 throw new JsonException("Unterminated array");

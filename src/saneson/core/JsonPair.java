@@ -2,9 +2,9 @@ package saneson.core;
 
 public class JsonPair {
     String key;
-    JsonElement element;
+    JsonNode element;
 
-    public JsonPair(String key, JsonElement element) {
+    public JsonPair(String key, JsonNode element) {
         this.key = key;
         this.element = element;
     }

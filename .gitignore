@@ -7,3 +7,4 @@
 META-INF
 src/*.java
 *.txt
+*.json

@@ -2,7 +2,7 @@ package saneson.core;
 
 import java.util.List;
 
-public class JsonValue implements JsonElement {
+public class JsonValue implements JsonNode {
     Object value;
 
     public JsonValue(Object value) {
@@ -22,8 +22,8 @@ public class JsonValue implements JsonElement {
     }
 
     @SuppressWarnings("unchecked")
-    public List<JsonElement> asArray() {
-        return (value instanceof List<?> list) ? (List<JsonElement>) list : null;
+    public List<JsonNode> asArray() {
+        return (value instanceof List<?> list) ? (List<JsonNode>) list : null;
     }
 
     public boolean isArray() {

@@ -1,7 +1,7 @@
 package saneson.impl;
 
 import org.junit.Test;
-import saneson.core.JsonElement;
+import saneson.core.JsonNode;
 import saneson.core.JsonException;
 import saneson.core.JsonObject;
 
@@ -19,7 +19,7 @@ public class JsonParserTest {
 
     @Test
     public void parsesEmptyObject() {
-        JsonElement result = JsonParser.parse("{}");
+        JsonNode result = JsonParser.parse("{}");
 
         assertNotNull(result);
         assertTrue(result.isObject());
@@ -27,7 +27,7 @@ public class JsonParserTest {
 
     @Test
     public void parseJsonToString() {
-        JsonElement result = JsonParser.parse("\"hello\"");
+        JsonNode result = JsonParser.parse("\"hello\"");
 
         assertNotNull(result);
         assertFalse(result.isObject());
@@ -38,7 +38,7 @@ public class JsonParserTest {
     public void parsesSimpleObject() {
         String json = "{\"name\":\"Petra\",\"year\":312,\"active\":true}";
 
-        JsonElement result = JsonParser.parse(json);
+        JsonNode result = JsonParser.parse(json);
 
         assertTrue(result.isObject());
         JsonObject obj = result.asObject();
