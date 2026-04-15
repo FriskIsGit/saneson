@@ -13,7 +13,7 @@ public interface JsonNode {
 
     /**
      * Resolves a JSON Pointer path against the current JSON structure and returns
-     * the referenced element.
+     * the referenced node.
      * <p>
      * JsonNode node = root.path("/store/book/0/title");
      * </p>
@@ -27,17 +27,17 @@ public interface JsonNode {
         if (!path.startsWith("/")) {
             return null;
         }
-        JsonNode element = this;
+        JsonNode node = this;
         int start = 1;
         while (start <= path.length()) {
             int slash = path.indexOf('/', start);
             int end = slash == -1 ? path.length() : slash;
             String segment = path.substring(start, end);
 
-            if (element instanceof JsonObject obj) {
-                element = obj.find(segment);
+            if (node instanceof JsonObject obj) {
+                node = obj.find(segment);
             } else {
-                JsonValue v = element.asValue();
+                JsonValue v = node.asValue();
                 if (v == null || !v.isArray()) {
                     return null;
                 }
@@ -51,9 +51,9 @@ public interface JsonNode {
                 if (i < 0 || i >= arr.size()) {
                     return null;
                 }
-                element = arr.get(i);
+                node = arr.get(i);
             }
-            if (element == null) {
+            if (node == null) {
                 return null;
             }
             if (slash == -1) {
@@ -61,6 +61,6 @@ public interface JsonNode {
             }
             start = slash + 1;
         }
-        return element;
+        return node;
     }
 }

@@ -59,7 +59,7 @@ public final class JsonParser {
                 return new JsonValue(t.value);
             case NUMBER:
                 next();
-                return new JsonValue(Double.valueOf(t.value));
+                return new JsonValue(new JsonNumber(t.value));
             case TRUE:
                 next();
                 return new JsonValue(Boolean.TRUE);

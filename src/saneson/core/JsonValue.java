@@ -1,5 +1,7 @@
 package saneson.core;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 
 public class JsonValue implements JsonNode {
@@ -14,7 +16,27 @@ public class JsonValue implements JsonNode {
     }
 
     public Double asDouble() {
-        return (value instanceof Double d) ? d : null;
+        return (value instanceof JsonNumber n) ? n.asDouble() : null;
+    }
+
+    public Integer asInt() {
+        return (value instanceof JsonNumber n) ? n.asInt() : null;
+    }
+
+    public Long asLong() {
+        return (value instanceof JsonNumber n) ? n.asLong() : null;
+    }
+
+    public BigDecimal asBigDecimal() {
+        return (value instanceof JsonNumber n) ? n.asBigDecimal() : null;
+    }
+
+    public BigInteger asBigInteger() {
+        return (value instanceof JsonNumber n) ? n.asBigInteger() : null;
+    }
+
+    public JsonNumber asNumber() {
+        return (value instanceof JsonNumber n) ? n : null;
     }
 
     public Boolean asBoolean() {
@@ -35,7 +57,7 @@ public class JsonValue implements JsonNode {
     }
 
     public boolean isNumber() {
-        return value instanceof Double;
+        return value instanceof JsonNumber;
     }
 
     public boolean isBoolean() {

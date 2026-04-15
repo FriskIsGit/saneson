@@ -9,10 +9,14 @@ public class JsonObject implements JsonNode {
         this.level = level;
     }
 
+    public List<JsonPair> pairs() {
+        return level;
+    }
+
     JsonNode find(String key) {
         for (JsonPair pair : level) {
             if (pair.key.equals(key)) {
-                return pair.element;
+                return pair.node;
             }
         }
         return null;
@@ -34,11 +38,11 @@ public class JsonObject implements JsonNode {
     }
 
     public JsonObject getObject(String key) {
-        JsonNode element = find(key);
-        if (element == null) {
+        JsonNode node = find(key);
+        if (node == null) {
             return null;
         }
-        if (element instanceof JsonObject obj) {
+        if (node instanceof JsonObject obj) {
             return obj;
         }
         throw new JsonException("Field '" + key + "' is not an object");
@@ -105,11 +109,11 @@ public class JsonObject implements JsonNode {
     }
 
     private JsonValue getValue(String key) {
-        JsonNode element = find(key);
-        if (element == null) {
+        JsonNode node = find(key);
+        if (node == null) {
             return null;
         }
-        if (element instanceof JsonValue val) {
+        if (node instanceof JsonValue val) {
             return val;
         }
         throw new JsonException("Field '" + key + "' is an object, not a value");
