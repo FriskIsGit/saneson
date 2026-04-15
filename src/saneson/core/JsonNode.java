@@ -20,8 +20,15 @@ public interface JsonNode {
      * @param path JSON Pointer string (see RFC 6901), e.g. "/a/b/0"
      **/
     default JsonNode path(String path) {
+        if (path.isEmpty()) {
+            return this;
+        }
+        // Non-empty pointers must start with '/' otherwise they're invalid
+        if (!path.startsWith("/")) {
+            return null;
+        }
         JsonNode element = this;
-        int start = 0;
+        int start = 1;
         while (start <= path.length()) {
             int slash = path.indexOf('/', start);
             int end = slash == -1 ? path.length() : slash;
