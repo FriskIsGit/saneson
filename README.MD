@@ -62,13 +62,13 @@ obj.pairs();                     // raw access for iteration
 Internally wraps an `Object` which is one of: `String`, `JsonNumber`, `Boolean`, `List<JsonNode>`, or `null`. 
 The `is…()` / `as…()` methods dispatch on the type:
 
-```java
-value.isString();    value.asString();
-value.isNumber();    value.asNumber();   value.asDouble();
-value.isBoolean();   value.asBoolean();
-value.isArray();     value.asArray();    // List<JsonNode>
-value.isNull();
-```
+| Check         | Convert                               |
+|---------------|---------------------------------------|
+| `isString()`  | `asString()`                          |
+| `isNumber()`  | `asNumber()`, `asDouble()`, `asInt()` |
+| `isBoolean()` | `asBoolean()`                         |
+| `isArray()`   | `asArray()` → `List<JsonNode>`        |
+| `isNull()`    |                                       |
 
 ### `JsonNumber` — why numbers are different
 

@@ -3,9 +3,6 @@ package saneson.impl;
 import org.junit.Test;
 import saneson.core.JsonNode;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 import static org.junit.Assert.assertEquals;
 
 public class JsonWriterTest {

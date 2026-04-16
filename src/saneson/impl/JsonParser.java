@@ -5,20 +5,27 @@ import saneson.core.*;
 import java.util.*;
 
 public final class JsonParser {
+    private static final int DEFAULT_MAX_DEPTH = 64;
     private final List<Token> tokens;
+    private final int maxDepth;
     private int pos = 0;
 
-    private JsonParser(List<Token> tokens) {
+    private JsonParser(List<Token> tokens, int maxDepth) {
         this.tokens = tokens;
+        this.maxDepth = maxDepth;
     }
 
     public static JsonNode parse(String json) {
-        List<Token> tokens = JsonTokenizer.tokenize(json);
-        return parse(tokens);
+        return parse(json, DEFAULT_MAX_DEPTH);
     }
 
-    static JsonNode parse(List<Token> tokens) {
-        JsonParser parser = new JsonParser(tokens);
+    public static JsonNode parse(String json, int maxDepth) {
+        List<Token> tokens = JsonTokenizer.tokenize(json);
+        return parse(tokens, maxDepth);
+    }
+
+    static JsonNode parse(List<Token> tokens, int maxDepth) {
+        JsonParser parser = new JsonParser(tokens, maxDepth);
         JsonNode value = parser.parseValue(0);
         if (parser.hasToken()) {
             throw new JsonException("Extra token after JSON value: " + parser.token());
@@ -45,6 +52,9 @@ public final class JsonParser {
     }
 
     private JsonNode parseValue(int depth) {
+        if (depth > maxDepth) {
+            throw new JsonException("Nesting depth exceeded maximum of " + maxDepth);
+        }
         if (!hasToken()) {
             throw new JsonException("Unexpected EOF");
         }

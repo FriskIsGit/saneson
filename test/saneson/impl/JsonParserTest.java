@@ -6,15 +6,11 @@ import saneson.core.JsonException;
 import saneson.core.JsonObject;
 
 import static org.junit.Assert.*;
-import java.util.*;
 
 public class JsonParserTest {
     @Test
     public void throwsOnEmptyJson() {
-        assertThrows(JsonException.class, () -> {
-            List<Token> tokens = JsonTokenizer.tokenize("   ");
-            JsonParser.parse(tokens);
-        });
+        assertThrows(JsonException.class, () -> JsonParser.parse("   "));
     }
 
     @Test
@@ -32,6 +28,18 @@ public class JsonParserTest {
         assertNotNull(result);
         assertFalse(result.isObject());
         assertEquals("hello", result.asValue().toString());
+    }
+
+    @Test
+    public void throwsWhenMaxDepthIsExceeded() {
+        String json = "{\"a\":{\"b\":{\"c\":{}}}}";
+        assertThrows(JsonException.class, () -> JsonParser.parse(json, 2));
+    }
+
+    @Test
+    public void throwsWhenMaxDepthIsExceededWithNestedArray() {
+        String json = "{\"a\":[{\"b\":[{\"c\":1}]}]}";
+        assertThrows(JsonException.class, () -> JsonParser.parse(json, 2));
     }
 
     @Test
