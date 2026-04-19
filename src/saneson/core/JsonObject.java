@@ -13,7 +13,7 @@ public class JsonObject implements JsonNode {
         return level;
     }
 
-    JsonNode find(String key) {
+    public JsonNode find(String key) {
         for (JsonPair pair : level) {
             if (pair.key.equals(key)) {
                 return pair.node;

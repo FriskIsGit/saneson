@@ -83,6 +83,23 @@ public class JsonValue implements JsonNode {
         return null;
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public <T> T as(Class<T> clazz) {
+        if (value == null) return null;
+
+        if (isNumber()) {
+            return asNumber().as(clazz);
+        }
+        if (clazz.isEnum() && value instanceof String s) {
+            return (T) Enum.valueOf((Class<? extends Enum>) clazz, s);
+        }
+        try {
+            return clazz.cast(value);
+        } catch (ClassCastException e) {
+            throw new JsonException("Cannot cast " + value.getClass().getName() + " to " + clazz.getName());
+        }
+    }
+
     @Override
     public String toString() {
         return asString();
