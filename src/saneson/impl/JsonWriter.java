@@ -1,5 +1,6 @@
 package saneson.impl;
 
+import saneson.core.JsonException;
 import saneson.core.JsonNode;
 import saneson.core.JsonObject;
 import saneson.core.JsonPair;
@@ -9,6 +10,7 @@ import java.util.List;
 
 public class JsonWriter {
     private static final String INDENT = "  ";
+    private static final int DEFAULT_MAX_DEPTH = 64;
     private static final JsonWriter writer = new JsonWriter();
 
     public static JsonWriter getInstance() {
@@ -23,6 +25,9 @@ public class JsonWriter {
     }
 
     private void writeNode(StringBuilder json, JsonNode node, int depth) {
+        if (depth > DEFAULT_MAX_DEPTH) {
+            throw new JsonException("Nesting depth exceeded maximum of " + DEFAULT_MAX_DEPTH);
+        }
         if (node instanceof JsonObject obj) {
             writeObject(json, obj, depth);
         } else {

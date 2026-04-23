@@ -1,6 +1,7 @@
 package saneson.extensions;
 
 import org.junit.Test;
+import saneson.core.JsonException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -119,11 +120,38 @@ public class JsonReaderTest {
     }
 
     @Test
+    public void skipsNullValueForPrimitiveField() {
+        Dummy result = JsonReader.read("{\"name\": \"dummy\", \"age\": null}", Dummy.class);
+
+        assertEquals("dummy", result.name);
+        assertEquals(0, result.age);
+    }
+
+    @Test
     public void handleRawList() {
         List<String> expected = List.of("hammer", "nail", "screw");
         List<String> result = JsonReader.read("[\"hammer\", \"nail\", \"screw\"]", ArrayList.class);
 
         assertTrue(expected.equals(result));
+    }
+
+    @Test
+    public void handleNullInPrimitiveArray() {
+        IntHolder result = JsonReader.read("{\"numbers\": [1, null, 3]}", IntHolder.class);
+
+        assertArrayEquals(new int[]{1, 0, 3}, result.numbers);
+    }
+
+    @Test
+    public void readEmptyObjectIntoStringGivesClearError() {
+        assertThrows(JsonException.class, () -> JsonReader.read("{}", String.class));
+    }
+}
+
+class IntHolder {
+    int[] numbers;
+
+    IntHolder() {
     }
 }
 

@@ -56,6 +56,12 @@ public class JsonParserTest {
     }
 
     @Test
+    @SuppressWarnings("DataFlowIssue")
+    public void throwsOnNullInput() {
+        assertThrows(JsonException.class, () -> JsonParser.parse(null));
+    }
+
+    @Test
     public void throwOnUnterminatedObject() {
         assertThrows(JsonException.class, () -> JsonParser.parse("{"));
     }

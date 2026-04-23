@@ -13,6 +13,12 @@ public class JsonObject implements JsonNode {
         return level;
     }
 
+    /**
+     * Returns the value associated with the given key, or {@code null} if the key is absent.
+     * <p>
+     * JSON permits duplicate keys but leaves the behavior implementation-defined (RFC 8259).
+     * This implementation returns the value of the <b>first</b> occurrence in document order.
+     */
     public JsonNode find(String key) {
         for (JsonPair pair : level) {
             if (pair.key.equals(key)) {

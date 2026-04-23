@@ -90,6 +90,9 @@ public class JsonReader {
     }
 
     private static void setFieldValue(Object instance, Field field, Object fieldValue) throws JsonException {
+        if (fieldValue == null) {
+            return;
+        }
         try {
             field.set(instance, fieldValue);
         } catch (IllegalAccessException e) {
@@ -119,7 +122,11 @@ public class JsonReader {
     private static Object readArray(List<JsonNode> elements, Type componentType) throws JsonException {
         Object array = Array.newInstance(rawClass(componentType), elements.size());
         for (int i = 0; i < elements.size(); i++) {
-            Array.set(array, i, read(elements.get(i), componentType));
+            Object value = read(elements.get(i), componentType);
+            if (value == null) {
+                continue;
+            }
+            Array.set(array, i, value);
         }
         return array;
     }

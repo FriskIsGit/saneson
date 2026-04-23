@@ -20,6 +20,9 @@ public final class JsonParser {
     }
 
     public static JsonNode parse(String json, int maxDepth) {
+        if (json == null) {
+            throw new JsonException("Input JSON is null");
+        }
         List<Token> tokens = JsonTokenizer.tokenize(json);
         return parse(tokens, maxDepth);
     }
