@@ -54,5 +54,27 @@ public class JsonParserTest {
         assertEquals(Double.valueOf(312), obj.getDouble("year"));
         assertEquals(true, obj.getBoolean("active"));
     }
+
+    @Test
+    public void throwOnUnterminatedObject() {
+        assertThrows(JsonException.class, () -> JsonParser.parse("{"));
+    }
+
+    @Test
+    public void throwsOnTrailingCommaInObject() {
+        assertThrows(JsonException.class, () -> JsonParser.parse("{\"a\":1,"));
+    }
+
+    @Test
+    public void throwsOnUnterminatedString() {
+        assertThrows(JsonException.class, () -> JsonParser.parse("\"abc"));
+    }
+
+    @Test
+    public void throwsOnInvalidUnicodeEscape() {
+        JsonException ex = assertThrows(JsonException.class, () -> JsonParser.parse("\"\\uZZZZ\""));
+        assertTrue("Expected message to mention unicode escape, got: " + ex.getMessage(),
+                ex.getMessage().toLowerCase().contains("unicode"));
+    }
 }
 

@@ -92,6 +92,9 @@ public final class JsonParser {
             return new JsonObject(level);
         }
         while (true) {
+            // EOF after '{' or trailing ','
+            if (!hasToken()) throw new JsonException("Unterminated object");
+
             Token keyToken = token();
             if (keyToken.type != Token.Type.STRING)
                 throw new JsonException("Object keys must be STRING but got " + keyToken);

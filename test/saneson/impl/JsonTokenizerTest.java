@@ -2,6 +2,7 @@ package saneson.impl;
 
 import static org.junit.Assert.*;
 import org.junit.Test;
+import saneson.core.JsonException;
 
 import java.util.List;
 
@@ -95,11 +96,11 @@ public class JsonTokenizerTest {
 
     @Test
     public void throwOnInvalidEscape() {
-        assertThrows(IllegalArgumentException.class, () -> JsonTokenizer.tokenize("\"\\z\""));
+        assertThrows(JsonException.class, () -> JsonTokenizer.tokenize("\"\\z\""));
     }
 
     @Test
     public void throwOnInvalidNumber() {
-        assertThrows(IllegalArgumentException.class, () -> JsonTokenizer.tokenize("-012"));
+        assertThrows(JsonException.class, () -> JsonTokenizer.tokenize("-012"));
     }
 }

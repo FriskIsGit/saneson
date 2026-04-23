@@ -1,5 +1,7 @@
 package saneson.impl;
 
+import saneson.core.JsonException;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +48,7 @@ public class JsonTokenizer {
                         token = new Token(Token.Type.NULL);
                         i += 4;
                     } else {
-                        throw new IllegalArgumentException("Unexpected character at " + i + ": " + c);
+                        throw new JsonException("Unexpected character at " + i + ": " + c);
                     }
                     tokens.add(token);
                 }
@@ -66,10 +68,12 @@ public class JsonTokenizer {
         int len = rawJson.length();
         StringBuilder str = new StringBuilder();
         int i = from + 1;
+        boolean unterminated = true;
         while (i < len) {
             char ch = rawJson.charAt(i);
             if (ch == '"') {
                 i++;
+                unterminated = false;
                 break;
             }
             i++;
@@ -79,7 +83,7 @@ public class JsonTokenizer {
                 continue;
             }
             if (i >= len) {
-                throw new IllegalArgumentException("Unterminated escape");
+                throw new JsonException("Unterminated escape");
             }
             char escapeChar = rawJson.charAt(i++);
             switch (escapeChar) {
@@ -93,15 +97,23 @@ public class JsonTokenizer {
                 case 't' -> str.append('\t');
                 case 'u' -> {
                     if (i + 4 > len) {
-                        throw new IllegalArgumentException("EOS parsing unicode escape");
+                        throw new JsonException("EOS parsing unicode escape");
                     }
 
                     String hex = rawJson.substring(i, i + 4);
-                    str.append((char) Integer.parseInt(hex, 16));
+                    try {
+                        str.append((char) Integer.parseInt(hex, 16));
+                    } catch (NumberFormatException e) {
+                        throw new JsonException("Invalid unicode escape: \\u" + hex);
+                    }
                     i += 4;
                 }
-                default -> throw new IllegalArgumentException("Invalid escape: \\" + escapeChar);
+                default -> throw new JsonException("Invalid escape: \\" + escapeChar);
             }
+        }
+
+        if (unterminated) {
+            throw new JsonException("Unterminated string starting at " + from);
         }
         var token = new Token(Token.Type.STRING, str.toString());
         return new TokenResult(token, i);
@@ -124,7 +136,7 @@ public class JsonTokenizer {
         if (json.charAt(i) == '0') {
             int next = i + 1;
             if (next < len && isDigit(json.charAt(next))) {
-                throw new IllegalArgumentException("Zero cannot be followed by a digit");
+                throw new JsonException("Zero cannot be followed by a digit");
             }
         }
         i = skipUntilNonDigit(json, i+1);
@@ -157,10 +169,10 @@ public class JsonTokenizer {
     private static void ensureDigit(String json, int at, char after) {
         int len = json.length();
         if (at >= len) {
-            throw new IllegalArgumentException("EOS parsing number, expected digit.");
+            throw new JsonException("EOS parsing number, expected digit.");
         }
         if (!isDigit(json.charAt(at))) {
-            throw new IllegalArgumentException("Expected digit after '" + after + "'");
+            throw new JsonException("Expected digit after '" + after + "'");
         }
     }
 
