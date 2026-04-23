@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static org.junit.Assert.*;
 
@@ -97,6 +98,22 @@ public class JsonReaderTest {
         NestedLists result = JsonReader.read(
                 "{\"grid\": [[\"a\", \"b\"], [\"c\", \"d\"]]}",
                 NestedLists.class);
+
+        assertTrue(expected.equals(result));
+    }
+
+    @Test
+    public void readUsingJsonAnnotationKey() {
+        Aliased expected = new Aliased("John Doe", null);
+        Aliased result = JsonReader.read("{\"full_name\": \"John Doe\", \"fullName\": \"ignored\"}", Aliased.class);
+
+        assertTrue(expected.equals(result));
+    }
+
+    @Test
+    public void skipIgnoredField() {
+        Vault expected = new Vault(null, "keep");
+        Vault result = JsonReader.read("{\"secret\": \"dropped\", \"kept\": \"keep\"}", Vault.class);
 
         assertTrue(expected.equals(result));
     }
@@ -198,6 +215,12 @@ class ListOfArrays {
     }
 
     public boolean equals(ListOfArrays other) {
+        if (rows == null && other == null) {
+            return true;
+        }
+        if (rows == null || other.rows == null) {
+            return false;
+        }
         if (rows.size() != other.rows.size()) {
             return false;
         }
@@ -237,6 +260,42 @@ class ArrayOfLists {
             }
         }
         return true;
+    }
+}
+
+class Vault {
+    @Json(ignored = true)
+    String secret;
+    String kept;
+
+    Vault() {
+    }
+
+    public Vault(String secret, String kept) {
+        this.secret = secret;
+        this.kept = kept;
+    }
+
+    public boolean equals(Vault other) {
+        return Objects.equals(secret, other.secret) && Objects.equals(kept, other.kept);
+    }
+}
+
+class Aliased {
+    @Json("full_name")
+    String fullName;
+    String otherName;
+
+    Aliased() {
+    }
+
+    public Aliased(String fullName, String otherName) {
+        this.fullName = fullName;
+        this.otherName = otherName;
+    }
+
+    public boolean equals(Aliased other) {
+        return Objects.equals(fullName, other.fullName) && Objects.equals(otherName, other.otherName);
     }
 }
 

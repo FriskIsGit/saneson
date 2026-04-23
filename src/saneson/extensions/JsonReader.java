@@ -62,14 +62,20 @@ public class JsonReader {
             if (Modifier.isStatic(mod) || (IGNORE_TRANSIENT && Modifier.isTransient(mod))) {
                 continue;
             }
-            if (!field.trySetAccessible()) {
-                throw new JsonException("Unable to access field: " + field.getName() + " of type " + field.getType());
-            }
 
             String key = field.getName();
             Json annotation = field.getAnnotation(Json.class);
-            if (annotation != null && !annotation.key().isEmpty()) {
-                key = annotation.key();
+            if (annotation != null) {
+                if (annotation.ignored()) {
+                    continue;
+                }
+                if (!annotation.value().isEmpty()) {
+                    key = annotation.value();
+                }
+            }
+
+            if (!field.trySetAccessible()) {
+                throw new JsonException("Unable to access field: " + field.getName() + " of type " + field.getType());
             }
 
             JsonNode node = object.find(key);

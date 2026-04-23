@@ -15,5 +15,10 @@ public @interface Json {
     /**
      * The JSON key that maps to this field. If empty, the field name is used.
      */
-    String key() default "";
+    String value() default "";
+
+    /**
+     * When {@code true}, the field is skipped during deserialization even if a matching JSON key is present.
+     */
+    boolean ignored() default false;
 }
