@@ -2,6 +2,7 @@ package saneson.extensions;
 
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -67,11 +68,43 @@ public class JsonReaderTest {
     }
 
     @Test
+    public void handleListOfStringArrays() {
+        ListOfArrays expected = new ListOfArrays(List.of(
+                new String[]{"a", "b"},
+                new String[]{"c", "d"}));
+        ListOfArrays result = JsonReader.read(
+                "{\"rows\": [[\"a\", \"b\"], [\"c\", \"d\"]]}",
+                ListOfArrays.class);
+
+        assertTrue(expected.equals(result));
+    }
+
+    @Test
+    public void handleArrayOfLists() {
+        ArrayOfLists expected = new ArrayOfLists(new List[]{
+                List.of("a", "b"),
+                List.of("c", "d")});
+        ArrayOfLists result = JsonReader.read(
+                "{\"rows\": [[\"a\", \"b\"], [\"c\", \"d\"]]}",
+                ArrayOfLists.class);
+
+        assertTrue(expected.equals(result));
+    }
+
+    @Test
     public void handleNestedLists() {
         NestedLists expected = new NestedLists(List.of(List.of("a", "b"), List.of("c", "d")));
         NestedLists result = JsonReader.read(
                 "{\"grid\": [[\"a\", \"b\"], [\"c\", \"d\"]]}",
                 NestedLists.class);
+
+        assertTrue(expected.equals(result));
+    }
+
+    @Test
+    public void handleRawList() {
+        List<String> expected = List.of("hammer", "nail", "screw");
+        List<String> result = JsonReader.read("[\"hammer\", \"nail\", \"screw\"]", ArrayList.class);
 
         assertTrue(expected.equals(result));
     }
@@ -147,6 +180,59 @@ class ClassObjects {
         }
         for (int i = 0; i < dummies.size(); i++) {
             if (!dummies.get(i).equals(classObjects.dummies.get(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+
+class ListOfArrays {
+    List<String[]> rows;
+
+    ListOfArrays() {
+    }
+
+    public ListOfArrays(List<String[]> rows) {
+        this.rows = rows;
+    }
+
+    public boolean equals(ListOfArrays other) {
+        if (rows.size() != other.rows.size()) {
+            return false;
+        }
+        for (int i = 0; i < rows.size(); i++) {
+            String[] row = rows.get(i);
+            String[] otherRow = other.rows.get(i);
+            if (row.length != otherRow.length) {
+                return false;
+            }
+            for (int j = 0; j < row.length; j++) {
+                if (!row[j].equals(otherRow[j])) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+}
+
+class ArrayOfLists {
+    List<String>[] rows;
+
+    ArrayOfLists() {
+    }
+
+    public ArrayOfLists(List<String>[] rows) {
+        this.rows = rows;
+    }
+
+    public boolean equals(ArrayOfLists other) {
+        if (rows.length != other.rows.length) {
+            return false;
+        }
+        for (int i = 0; i < rows.length; i++) {
+            if (!rows[i].equals(other.rows[i])) {
                 return false;
             }
         }

@@ -9,6 +9,7 @@ import saneson.impl.JsonParser;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
@@ -16,7 +17,6 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class JsonReader {
     private static final HashMap<Class<?>, CachedClass> cachedClasses = new HashMap<>();
@@ -29,15 +29,22 @@ public class JsonReader {
         return read(JsonParser.parse(json), clazz);
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> T read(JsonNode node, Class<T> clazz) throws JsonException {
         if (node == null) {
             return null;
         }
-        if (node.isObject()) {
-            return readObject(node.asObject(), clazz);
-        } else {
-            return readValue(node.asValue(), clazz);
+        return (T) read(node, (Type) clazz);
+    }
+
+    private static Object read(JsonNode node, Type type) throws JsonException {
+        if (node == null) {
+            return null;
         }
+        if (node.isObject()) {
+            return readObject(node.asObject(), rawClass(type));
+        }
+        return readValue(node.asValue(), type);
     }
 
     public static <T> T readObject(JsonObject object, Class<T> clazz) throws JsonException {
@@ -70,37 +77,7 @@ public class JsonReader {
                 continue;
             }
 
-            Class<?> type = field.getType();
-
-            Object fieldValue;
-            if (node.isObject()) {
-                fieldValue = readObject(node.asObject(), type);
-                setFieldValue(instance, field, fieldValue);
-                continue;
-            }
-
-            JsonValue jsonValue = node.asValue();
-            if (jsonValue.isNull()) {
-                setFieldValue(instance, field, null);
-                continue;
-            }
-            var listField = List.class.isAssignableFrom(type);
-            var arrayField = type.isArray();
-            var isFieldIterable = listField || arrayField;
-
-            if (jsonValue.isArray() && !isFieldIterable) {
-                throw new JsonException("Cannot map JSON array to field '" + field.getName() +
-                        "' of type " + type.getName() + " (expected List or array)");
-            }
-
-            if (listField) {
-                fieldValue = readList(jsonValue.asArray(), field.getGenericType());
-            } else if (arrayField) {
-                fieldValue = readArray(jsonValue.asArray(), type.getComponentType());
-            } else {
-                fieldValue = readValue(jsonValue, type);
-            }
-
+            Object fieldValue = read(node, field.getGenericType());
             setFieldValue(instance, field, fieldValue);
         }
         return instance;
@@ -114,8 +91,7 @@ public class JsonReader {
         }
     }
 
-    // genericType in this case encapsulates List<T> providing both
-    private static List<Object> readList(List<JsonNode> elements, Type genericType) {
+    private static List<Object> readList(List<JsonNode> elements, Type genericType) throws JsonException {
         if (elements == null) {
             return null;
         }
@@ -123,41 +99,59 @@ public class JsonReader {
         if (genericType instanceof ParameterizedType listType) {
             typeT = listType.getActualTypeArguments()[0];
         } else {
-            // genericType is not a ParameterizedType if the List is generic (no <T>)
             typeT = Object.class;
         }
 
         List<Object> out = new ArrayList<>(elements.size());
         for (JsonNode element : elements) {
-            Object elementValue;
-            if (typeT instanceof ParameterizedType nestedTypeT) {
-                if (element.isObject()) {
-                    throw new JsonException("Expected JSON array for nested List but got object");
-                }
-                elementValue = readList(element.asValue().asArray(), nestedTypeT);
-            } else if (typeT instanceof Class<?> c) {
-                elementValue = read(element, c);
-            } else {
-                elementValue = read(element, Object.class);
-            }
-            out.add(elementValue);
+            Object object = read(element, typeT);
+            out.add(object);
         }
         return out;
     }
 
-    private static Object readArray(List<JsonNode> elements, Class<?> componentType) {
-        Object array = Array.newInstance(componentType, elements.size());
+    private static Object readArray(List<JsonNode> elements, Type componentType) throws JsonException {
+        Object array = Array.newInstance(rawClass(componentType), elements.size());
         for (int i = 0; i < elements.size(); i++) {
             Array.set(array, i, read(elements.get(i), componentType));
         }
         return array;
     }
 
-    public static <T> T readValue(JsonValue value, Class<T> clazz) throws JsonException {
+    private static Object readValue(JsonValue value, Type type) throws JsonException {
         if (value.isNull()) {
             return null;
         }
-        return value.as(clazz);
+        Class<?> raw = rawClass(type);
+        if (value.isArray()) {
+            List<JsonNode> elements = value.asArray();
+            if (List.class.isAssignableFrom(raw)) {
+                return readList(elements, type);
+            }
+            // Array with a non-reifiable component type: T[], List<String>[]
+            if (type instanceof GenericArrayType gat) {
+                return readArray(elements, gat.getGenericComponentType());
+            }
+            // Array with a concrete component type: String[], int[], Object[]
+            if (raw.isArray()) {
+                return readArray(elements, raw.getComponentType());
+            }
+            throw new JsonException("Cannot map JSON array to type " + raw.getName() + " (expected List or array)");
+        }
+        return value.as(raw);
+    }
+
+    private static Class<?> rawClass(Type type) {
+        if (type instanceof Class<?> c) {
+            return c;
+        }
+        if (type instanceof ParameterizedType pt) {
+            return (Class<?>) pt.getRawType();
+        }
+        if (type instanceof GenericArrayType gat) {
+            return rawClass(gat.getGenericComponentType()).arrayType();
+        }
+        return Object.class;
     }
 
     private static <T> Constructor<T> getConstructor(Class<T> clazz) throws JsonException {
