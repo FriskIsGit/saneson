@@ -132,7 +132,7 @@ public class JsonReaderTest {
         List<String> expected = List.of("hammer", "nail", "screw");
         List<String> result = JsonReader.read("[\"hammer\", \"nail\", \"screw\"]", ArrayList.class);
 
-        assertTrue(expected.equals(result));
+        assertEquals(expected, result);
     }
 
     @Test
@@ -145,6 +145,38 @@ public class JsonReaderTest {
     @Test
     public void readEmptyObjectIntoStringGivesClearError() {
         assertThrows(JsonException.class, () -> JsonReader.read("{}", String.class));
+    }
+
+    @Test
+    public void arrayDeserialization() {
+        Car[] expected = new Car[]{new Car("BMW", 2000), new Car("Ford", 1999)};
+        String json = "[{ \"brand\" : \"BMW\", \"year\" : 2000 }, { \"year\" : 1999, \"brand\" : \"Ford\" }]";
+
+        Car[] cars = JsonReader.read(json, Car[].class);
+
+        assertArrayEquals(expected, cars);
+    }
+}
+
+class Car {
+    String brand;
+    int year;
+
+    public Car() {}
+
+    public Car(String brand, int year) {
+        this.brand = brand;
+        this.year = year;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) return true;
+        if (!(other instanceof Car car)) {
+            return false;
+        }
+        if (this.year != car.year) return false;
+        return Objects.equals(this.brand, car.brand);
     }
 }
 

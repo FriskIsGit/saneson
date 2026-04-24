@@ -13,10 +13,12 @@ public class JsonWriter {
     private static final int DEFAULT_MAX_DEPTH = 64;
     private static final JsonWriter writer = new JsonWriter();
 
-    public static JsonWriter getInstance() {
-        return writer;
+    /**
+     * Writes the provided JsonNode using the default JsonWriter instance.
+     */
+    public static String writeDefault(JsonNode node) {
+        return writer.write(node);
     }
-
 
     public String write(JsonNode node) {
         StringBuilder json = new StringBuilder();

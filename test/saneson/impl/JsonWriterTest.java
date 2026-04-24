@@ -9,7 +9,7 @@ public class JsonWriterTest {
     @Test
     public void testSimpleObjectWrite() {
         JsonNode node = JsonParser.parse("{\"name\":\"Petra\",\"year\":312,\"active\":true}");
-        String output = JsonWriter.getInstance().write(node);
+        String output = JsonWriter.writeDefault(node);
         String expected = """
                 {
                   "name": "Petra",

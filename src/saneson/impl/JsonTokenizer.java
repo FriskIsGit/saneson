@@ -183,13 +183,6 @@ public class JsonTokenizer {
         }
         return i;
     }
-
-    public static void main(String[] args) {
-        String sample = "{\"name\":\"John\",\"age\":33,\"active\":false,\"tags\":[\"x\",\"y\"]}";
-        for (Token token : tokenize(sample)) {
-            System.out.println(token);
-        }
-    }
 }
 
 
